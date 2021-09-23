@@ -162,6 +162,7 @@ public class Constants {
     public final static String       SPRING_BOOT_ENDPOINTS_JMX_ENABLED             = "endpoints.jmx.enabled";
     public final static String       LOG4J_IGNORE_TCL                              = "log4j.ignoreTCL";
     public final static String       RESOLVE_PARENT_CONTEXT_SERIALIZER_FACTORY     = "hessian.parent.context.create";
+    public final static String       ENABLE_EXPLODED                               = "enable_exploded";
 
     /**
      * Command Provider

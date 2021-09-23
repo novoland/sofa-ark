@@ -45,6 +45,9 @@ public class JarBizArchive extends AbstractArchive implements BizArchive {
 
     private final String SOFA_ARK_BIZ_LIB_EXPORT = "lib/export";
 
+    private URL[]        urls;
+    private URL[]        exportUrls;
+
     public JarBizArchive(Archive archive) {
         this.archive = archive;
     }
@@ -87,21 +90,27 @@ public class JarBizArchive extends AbstractArchive implements BizArchive {
 
     @Override
     public URL[] getUrls() throws IOException {
-        return getUrls(new EntryFilter() {
-            @Override
-            public boolean matches(Entry entry) {
-                return entry.getName().startsWith(SOFA_ARK_BIZ_LIB);
-            }
-        });
+        if (this.urls == null) {
+            this.urls = getUrls(new EntryFilter() {
+                @Override
+                public boolean matches(Entry entry) {
+                    return entry.getName().startsWith(SOFA_ARK_BIZ_LIB);
+                }
+            });
+        }
+        return this.urls;
     }
 
     public URL[] getExportUrls() throws IOException {
-        return getUrls(new EntryFilter() {
-            @Override
-            public boolean matches(Entry entry) {
-                return entry.getName().startsWith(SOFA_ARK_BIZ_LIB_EXPORT)
-                       && !entry.getName().equals(SOFA_ARK_BIZ_LIB_EXPORT);
-            }
-        });
+        if (this.exportUrls == null) {
+            this.exportUrls = getUrls(new EntryFilter() {
+                @Override
+                public boolean matches(Entry entry) {
+                    return entry.getName().startsWith(SOFA_ARK_BIZ_LIB_EXPORT)
+                           && !entry.getName().equals(SOFA_ARK_BIZ_LIB_EXPORT);
+                }
+            });
+        }
+        return this.exportUrls;
     }
 }

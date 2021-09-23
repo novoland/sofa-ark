@@ -19,7 +19,10 @@ package com.alipay.sofa.ark.bootstrap;
 import com.alipay.sofa.ark.loader.ExecutableArkBizJar;
 import com.alipay.sofa.ark.loader.archive.ExplodedArchive;
 import com.alipay.sofa.ark.loader.archive.JarFileArchive;
+import com.alipay.sofa.ark.loader.exploded.ExplodedDirectoryArchive;
+import com.alipay.sofa.ark.loader.exploded.ExplodedExecutableArkBizJar;
 import com.alipay.sofa.ark.spi.archive.ExecutableArchive;
+import com.alipay.sofa.ark.spi.constant.Constants;
 
 import java.io.File;
 import java.net.URI;
@@ -55,6 +58,7 @@ public abstract class BaseExecutableArchiveLauncher extends AbstractLauncher {
 
     /**
      * Returns the executable file archive
+     *
      * @return executable file archive
      * @throws Exception
      */
@@ -70,8 +74,11 @@ public abstract class BaseExecutableArchiveLauncher extends AbstractLauncher {
         if (!root.exists()) {
             throw new IllegalStateException("Unable to determine code source archive from " + root);
         }
+        if ("true".equals(System.getProperty(Constants.ENABLE_EXPLODED))) {
+            return new ExplodedExecutableArkBizJar(new ExplodedDirectoryArchive(new File(
+                System.getProperty("runtime_path", "."))));
+        }
         return root.isDirectory() ? new ExecutableArkBizJar(new ExplodedArchive(root))
             : new ExecutableArkBizJar(new JarFileArchive(root), root.toURI().toURL());
     }
-
 }

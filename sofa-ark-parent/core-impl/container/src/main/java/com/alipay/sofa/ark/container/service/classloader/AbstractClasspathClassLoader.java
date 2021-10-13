@@ -494,8 +494,13 @@ public abstract class AbstractClasspathClassLoader extends URLClassLoader {
             if (exportResourceClassLoadersInOrder != null) {
                 List<Enumeration<URL>> enumerationList = new ArrayList<>();
                 for (ClassLoader exportResourceClassLoader : exportResourceClassLoadersInOrder) {
-                    enumerationList.add(((AbstractClasspathClassLoader) exportResourceClassLoader)
-                        .getLocalResources(resourceName));
+                    if (exportResourceClassLoader instanceof AbstractClasspathClassLoader) {
+                        enumerationList
+                            .add(((AbstractClasspathClassLoader) exportResourceClassLoader)
+                                .getLocalResources(resourceName));
+                    } else {
+                        enumerationList.add(exportResourceClassLoader.getResources(resourceName));
+                    }
                 }
                 return new CompoundEnumeration<>(
                     enumerationList.toArray((Enumeration<URL>[]) new Enumeration<?>[0]));

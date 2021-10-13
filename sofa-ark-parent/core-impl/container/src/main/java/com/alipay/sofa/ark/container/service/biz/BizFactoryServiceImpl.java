@@ -16,12 +16,16 @@
  */
 package com.alipay.sofa.ark.container.service.biz;
 
+import com.alipay.sofa.ark.api.ArkConfigs;
 import com.alipay.sofa.ark.common.util.AssertUtils;
+import com.alipay.sofa.ark.common.util.FileUtils;
 import com.alipay.sofa.ark.common.util.StringUtils;
 import com.alipay.sofa.ark.container.model.BizModel;
 import com.alipay.sofa.ark.container.service.classloader.BizClassLoader;
 import com.alipay.sofa.ark.loader.JarBizArchive;
 import com.alipay.sofa.ark.loader.archive.JarFileArchive;
+import com.alipay.sofa.ark.loader.exploded.ClasspathBizArchive;
+import com.alipay.sofa.ark.loader.exploded.ExplodedDirectoryArchive;
 import com.alipay.sofa.ark.loader.jar.JarFile;
 import com.alipay.sofa.ark.spi.archive.Archive;
 import com.alipay.sofa.ark.spi.archive.BizArchive;
@@ -37,6 +41,7 @@ import com.google.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -84,12 +89,31 @@ public class BizFactoryServiceImpl implements BizFactoryService {
 
     @Override
     public Biz createBiz(File file) throws IOException {
-        JarFile bizFile = new JarFile(file);
-        JarFileArchive jarFileArchive = new JarFileArchive(bizFile);
-        JarBizArchive bizArchive = new JarBizArchive(jarFileArchive);
+        JarBizArchive bizArchive;
+        if ("true".equals(System.getProperty(Constants.CONTAINER_EXPLODED_ENABLE))) {
+            File unpackFile = FileUtils.unzip(file, file.getAbsolutePath() + "unpack");
+            bizArchive = new JarBizArchive(new ExplodedDirectoryArchive(unpackFile));
+        } else {
+            JarFile bizFile = new JarFile(file);
+            JarFileArchive jarFileArchive = new JarFileArchive(bizFile);
+            bizArchive = new JarBizArchive(jarFileArchive);
+        }
         BizModel biz = (BizModel) createBiz(bizArchive);
         biz.setBizTempWorkDir(file);
         return biz;
+    }
+
+    @Override
+    public Biz createEmbedMasterBiz(ClassLoader masterClassLoader) {
+        BizModel bizModel = new BizModel();
+        bizModel.setBizState(BizState.RESOLVED).setBizName(ArkConfigs.getStringValue(MASTER_BIZ))
+            .setBizVersion("1.0.0").setMainClass("mock main").setPriority("100")
+            .setWebContextPath("/").setDenyImportPackages(null).setDenyImportClasses(null)
+            .setDenyImportResources(null).setInjectPluginDependencies(new HashSet<>())
+            .setInjectExportPackages(null)
+            .setClassPath(((URLClassLoader) masterClassLoader).getURLs())
+            .setClassLoader(masterClassLoader);
+        return bizModel;
     }
 
     private Set<String> getInjectDependencies(String injectPluginDependencies) {
@@ -102,6 +126,11 @@ public class BizFactoryServiceImpl implements BizFactoryService {
     }
 
     private boolean isArkBiz(BizArchive bizArchive) {
+        if ("true".equals(System.getProperty(Constants.CONTAINER_EXPLODED_ENABLE))) {
+            if (bizArchive instanceof JarBizArchive || bizArchive instanceof ClasspathBizArchive) {
+                return true;
+            }
+        }
         return bizArchive.isEntryExist(new Archive.EntryFilter() {
             @Override
             public boolean matches(Archive.Entry entry) {

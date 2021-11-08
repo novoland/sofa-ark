@@ -29,17 +29,13 @@ import java.net.URL;
 import java.util.Enumeration;
 
 /**
- * 优先使用基座的classloader
+ * @author bingjie.lbj
  *
- * @author zhengbo.zb
- * @version : DelegateMasterBizClassLoaderHook.java, v 0.1 2020?05?03? 9:38 ?? renen.sun Exp $
+ * @version : DelegateMasterBizClassLoaderHook.java, v 0.1
  */
 @Extension("biz-classloader-hook")
 public class MasterBizClassLoaderHookAll implements ClassLoaderHook<Biz> {
 
-    /**
-     * 不需要委托给基座加载的包
-     **/
     public static String[] _UNPROXY_PACKAGE_ROOT = new String[] { "Class.class", "Object.class",
             "com.class", "java/lang/com.class", "com/alipay.class", "Throwable.class",
             "String.class", "Boolean.class", "config/application.properties",
@@ -107,9 +103,6 @@ public class MasterBizClassLoaderHookAll implements ClassLoaderHook<Biz> {
         }
     }
 
-    /**
-     * 判断类或者资源是否在名单的包里面
-     */
     private boolean inUnProxyPackage(String packageName) {
         if (StringUtil.isNotBlank(packageName)) {
             for (String packageRoot : _UNPROXY_PACKAGE_ROOT) {
@@ -121,11 +114,10 @@ public class MasterBizClassLoaderHookAll implements ClassLoaderHook<Biz> {
         return false;
     }
 
-    /**
-     * 判断类或者资源是否在名单的包里面
-     */
     private boolean inUnProxyResource(String resourceName) {
-        //资源类文件过滤掉
+        if (!resourceName.endsWith(".class")) {
+            return true;
+        }
         if (StringUtil.isNotBlank(resourceName)) {
             for (String packageRoot : _UNPROXY_PACKAGE_ROOT) {
                 if (resourceName.startsWith(packageRoot)) {

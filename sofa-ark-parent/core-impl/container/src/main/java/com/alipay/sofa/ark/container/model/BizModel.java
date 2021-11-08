@@ -267,13 +267,15 @@ public class BizModel implements Biz {
             eventAdminService.sendEvent(new BeforeBizStartupEvent(this));
             resetProperties();
             if (this == ArkClient.getMasterBiz()
-                && "true".equals(System.getProperty(Constants.CONTAINER_EMBED_ENABLE))) {
-                //内嵌模式，不再启动master biz
+                && "true".equals(System.getProperty(Constants.EMBED_ENABLE))) {
             } else {
+                long start = System.currentTimeMillis();
                 MainMethodRunner mainMethodRunner = new MainMethodRunner(mainClass, args);
                 mainMethodRunner.run();
                 // this can trigger health checker handler
                 eventAdminService.sendEvent(new AfterBizStartupEvent(this));
+                System.out.println("Ark biz [" + getIdentity() + "] started cost  "
+                                   + (System.currentTimeMillis() - start) + " ms");
             }
 
         } catch (Throwable e) {

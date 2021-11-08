@@ -142,27 +142,6 @@ public class ClassLoaderServiceImpl implements ClassLoaderService {
     }
 
     @Override
-    public void prepareExportResourceCache(ClassLoader classLoader, String exportPackage) {
-        Set<String> exportPackages = StringUtils.strToSet(exportPackage,
-            Constants.MANIFEST_VALUE_SPLIT);
-        Set<String> exportPackageStems = new HashSet<>();
-        Set<String> exportPackageNodes = new HashSet<>();
-        ParseUtils.parsePackageNodeAndStem(exportPackages, exportPackageStems, exportPackageNodes);
-        for (String resource : exportPackages) {
-            exportResourceAndClassLoaderMap.putIfAbsent(resource, new LinkedList<>());
-            exportResourceAndClassLoaderMap.get(resource).add(classLoader);
-        }
-        for (String resource : exportPackageStems) {
-            exportPrefixStemResourceAndClassLoaderMap.putIfAbsent(resource, new LinkedList<>());
-            exportPrefixStemResourceAndClassLoaderMap.get(resource).add(classLoader);
-        }
-        for (String resource : exportPackageNodes) {
-            exportSuffixStemResourceAndClassLoaderMap.putIfAbsent(resource, new LinkedList<>());
-            exportSuffixStemResourceAndClassLoaderMap.get(resource).add(classLoader);
-        }
-    }
-
-    @Override
     public boolean isClassInImport(String pluginName, String className) {
         Plugin plugin = pluginManagerService.getPluginByName(pluginName);
         AssertUtils.assertNotNull(plugin, "plugin: " + pluginName + " is null");
